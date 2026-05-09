@@ -2,7 +2,7 @@ name: Check SCRC Post
 
 on:
   schedule:
-    - cron: "*/10 * * * *" # 10분마다 실행
+    - cron: "*/5 * * * *" # 5분마다 실행
   workflow_dispatch:
 
 jobs:
@@ -40,7 +40,6 @@ jobs:
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
-
 
       - name: 실행
         run: node check.mjs
