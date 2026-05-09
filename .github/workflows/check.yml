@@ -8,6 +8,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -33,3 +35,11 @@ jobs:
 
       - name: 실행
         run: node check.mjs
+
+      - name: Commit last.txt
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add last.txt
+          git commit -m "update last title" || echo "No changes"
+          git push
