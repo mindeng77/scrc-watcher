@@ -35,7 +35,11 @@ const URL =
 
     // 👉 여기서 Worker 호출 (텔레그램 알림)
     await fetch("https://scrc.mindeng77.workers.dev/", {
-      method: "POST"
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
     });
 
     // 최신 제목 저장 (중요)
