@@ -24,4 +24,4 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: 실행
-        run: node check.js
+        run: node check.mjs
