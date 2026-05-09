@@ -15,10 +15,18 @@ jobs:
       - name: Node 설치
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: "npm"
 
       - name: 의존성 설치
-        run: npm install
+        # run: npm install
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}
 
       - name: Playwright 설치
         run: npx playwright install --with-deps
