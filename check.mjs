@@ -9,14 +9,20 @@ const URL =
     headless: true
   });
 
-  const page = await browser.newPage();
+  // 일반 브라우저처럼 보이도록 User-Agent 설정 및 화면 크기 지정
+  const page = await browser.newPage({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 }
+  });
 
+  // 페이지 이동 (네트워크 대기 시간을 조금 더 유연하게 설정)
   await page.goto(URL, {
-    waitUntil: "networkidle"
+    waitUntil: "domcontentloaded",
+    timeout: 60000
   });
 
   // 제목 로딩 대기
-  await page.waitForSelector(".rl-title");
+  await page.waitForSelector(".rl-title", { timeout: 60000 });
 
   // '접수중' 상태인 게시글 중 가장 첫 번째 요소 찾기
   const firstPost = page
