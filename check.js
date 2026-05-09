@@ -1,23 +1,48 @@
 import { chromium } from "playwright";
+import fs from "fs";
 
-const WORKER_URL = "https://scrc.mindeng77.workers.dev";
+const URL =
+  "https://scrc.co.kr/kor/sub4/menu_02.html";
 
-const URL = "https://scrc.co.kr/kor/sub4/menu_02.html";
+(async () => {
+  const browser = await chromium.launch({
+    headless: true
+  });
 
-const browser = await chromium.launch();
-const page = await browser.newPage();
+  const page = await browser.newPage();
 
-await page.goto(URL);
+  await page.goto(URL, {
+    waitUntil: "networkidle"
+  });
 
-const title = await page.locator("table tbody tr:first-child td a").innerText();
+  // 제목 로딩 대기
+  await page.waitForSelector(".rl-title");
 
-console.log("Latest:", title);
+  // 최신글 제목 가져오기
+  const title = await page.locator(".rl-title").first().innerText();
 
-// Worker 호출
-await fetch(WORKER_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ title })
-});
+  console.log("현재 최신글:", title);
 
-await browser.close();
+  // 이전 제목 읽기
+  let lastTitle = "";
+  if (fs.existsSync("last.txt")) {
+    lastTitle = fs.readFileSync("last.txt", "utf8");
+  }
+
+  // 비교
+  if (title !== lastTitle) {
+    console.log("새 글 발견");
+
+    // 👉 여기서 Worker 호출 (텔레그램 알림)
+    await fetch("https://scrc.mindeng77.workers.dev/", {
+      method: "POST"
+    });
+
+    // 최신 제목 저장 (중요)
+    fs.writeFileSync("last.txt", title);
+  } else {
+    console.log("변경 없음");
+  }
+
+  await browser.close();
+})();
