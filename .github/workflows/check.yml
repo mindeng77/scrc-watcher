@@ -41,9 +41,6 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
 
-      - name: Install Playwright dependencies (Always)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
 
       - name: 실행
         run: node check.mjs
