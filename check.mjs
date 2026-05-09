@@ -18,8 +18,13 @@ const URL =
   // 제목 로딩 대기
   await page.waitForSelector(".rl-title");
 
-  // 최신글 제목 가져오기
-  const title = await page.locator(".rl-title").first().innerText();
+  // '접수중' 상태인 게시글 중 가장 첫 번째 제목 가져오기
+  const title = await page
+    .locator(".register-list")
+    .filter({ has: page.locator(".rl-state-txt", { hasText: "접수중" }) })
+    .first()
+    .locator(".rl-title")
+    .innerText();
 
   console.log("현재 최신글:", title);
 
