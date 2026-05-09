@@ -18,15 +18,18 @@ const URL =
   // 제목 로딩 대기
   await page.waitForSelector(".rl-title");
 
-  // '접수중' 상태인 게시글 중 가장 첫 번째 제목 가져오기
-  const title = await page
+  // '접수중' 상태인 게시글 중 가장 첫 번째 요소 찾기
+  const firstPost = page
     .locator(".register-list")
     .filter({ has: page.locator(".rl-state-txt", { hasText: "접수중" }) })
-    .first()
-    .locator(".rl-title")
-    .innerText();
+    .first();
+
+  const title = await firstPost.locator(".rl-title").innerText();
+  const emIdx = await firstPost.locator("a.linkhref").getAttribute("data-em_idx");
+  const postUrl = `https://scrc.co.kr/kor/sub4/menu_02.html?pmode=view&em_idx=${emIdx}`;
 
   console.log("현재 최신글:", title);
+  console.log("게시글 주소:", postUrl);
 
   // 이전 제목 읽기
   let lastTitle = "";
@@ -44,7 +47,7 @@ const URL =
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, url: postUrl }),
     });
 
     // 최신 제목 저장 (중요)
