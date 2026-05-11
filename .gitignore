@@ -37,3 +37,6 @@ build/
 
 # Testing
 coverage/
+
+# State
+last.txt

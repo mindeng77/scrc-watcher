@@ -9,14 +9,14 @@ const __dirname = path.dirname(__filename);
 // 실행할 스크립트 경로
 const scriptPath = path.join(__dirname, 'check.mjs');
 
-console.log('스케줄러가 시작되었습니다. (5분 간격)');
+console.log('스케줄러가 시작되었습니다. (1분 간격)');
 
-// 5분마다 실행 (*/5 * * * *)
-cron.schedule('*/5 * * * *', () => {
+// 1분마다 실행 (* * * * *)
+cron.schedule('* * * * *', () => {
   const now = new Date().toLocaleString();
   console.log(`[${now}] 스크립트 실행 시작: node check.mjs`);
 
-  const child = spawn('node', [scriptPath]);
+  const child = spawn('node', [scriptPath], { windowsHide: true });
 
   child.stdout.on('data', (data) => {
     process.stdout.write(`[STDOUT] ${data}`);
@@ -35,7 +35,7 @@ cron.schedule('*/5 * * * *', () => {
 // 즉시 한 번 실행하고 싶다면 아래 주석을 해제하세요.
 // runImmediately();
 function runImmediately() {
-    const child = spawn('node', [scriptPath]);
+    const child = spawn('node', [scriptPath], { windowsHide: true });
     child.stdout.on('data', (data) => process.stdout.write(`[STDOUT] ${data}`));
     child.stderr.on('data', (data) => process.stderr.write(`[STDERR] ${data}`));
 }
