@@ -1,14 +1,13 @@
-import { chromium } from "playwright";
 import fs from "fs";
+import { chromium } from "playwright";
 
 const WORKER_URL = "https://scrc.mindeng77.workers.dev/";
-const LEGACY_LAST_FILE = "last.txt";
 const LAST_STATE_FILE = "last-state.json";
 
 const sites = [
   {
     key: "scrc",
-    name: "SCRC",
+    name: "선진임상연구센터",
     url: "https://scrc.co.kr/kor/sub4/menu_02.html",
     waitSelector: ".rl-title",
     findLatestPost: async (page) => {
@@ -18,11 +17,13 @@ const sites = [
         .first();
 
       const title = await firstPost.locator(".rl-title").innerText();
-      const emIdx = await firstPost.locator("a.linkhref").getAttribute("data-em_idx");
+      const emIdx = await firstPost
+        .locator("a.linkhref")
+        .getAttribute("data-em_idx");
       const url = `https://scrc.co.kr/kor/sub4/menu_02.html?pmode=view&em_idx=${emIdx}`;
 
       return { title: title.trim(), url };
-    }
+    },
   },
   {
     key: "gsc",
@@ -42,8 +43,8 @@ const sites = [
       const title = product ? `${product} - ${subject}` : subject;
 
       return { title, url };
-    }
-  }
+    },
+  },
 ];
 
 function loadLastTitles() {
@@ -66,15 +67,18 @@ async function notify(site, post) {
   await fetch(WORKER_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title: `[${site.name}] ${post.title}`, url: post.url })
+    body: JSON.stringify({
+      title: `[${site.name}] ${post.title}`,
+      url: post.url,
+    }),
   });
 }
 
 (async () => {
   const browser = await chromium.launch({
-    headless: true
+    headless: true,
   });
 
   const lastTitles = loadLastTitles();
@@ -82,14 +86,15 @@ async function notify(site, post) {
   try {
     for (const site of sites) {
       const page = await browser.newPage({
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        viewport: { width: 1280, height: 800 }
+        userAgent:
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        viewport: { width: 1280, height: 800 },
       });
 
       try {
         await page.goto(site.url, {
           waitUntil: "domcontentloaded",
-          timeout: 60000
+          timeout: 60000,
         });
 
         await page.waitForSelector(site.waitSelector, { timeout: 60000 });
