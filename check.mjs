@@ -3,28 +3,9 @@ import { chromium } from "playwright";
 
 const WORKER_URL = "https://scrc.mindeng77.workers.dev/";
 const LAST_STATE_FILE = "last-state.json";
+const BROWSER_PROFILE_DIR = ".playwright-chrome-profile";
 
 const sites = [
-  {
-    key: "scrc",
-    name: "선진임상연구센터",
-    url: "https://scrc.co.kr/kor/sub4/menu_02.html",
-    waitSelector: ".rl-title",
-    findLatestPost: async (page) => {
-      const firstPost = page
-        .locator(".register-list")
-        .filter({ has: page.locator(".rl-state-txt", { hasText: "접수중" }) })
-        .first();
-
-      const title = await firstPost.locator(".rl-title").innerText();
-      const emIdx = await firstPost
-        .locator("a.linkhref")
-        .getAttribute("data-em_idx");
-      const url = `https://scrc.co.kr/kor/sub4/menu_02.html?pmode=view&em_idx=${emIdx}`;
-
-      return { title: title.trim(), url };
-    },
-  },
   {
     key: "gsc",
     name: "GSC안티에이징랩",
@@ -45,6 +26,26 @@ const sites = [
       return { title, url };
     },
   },
+  {
+    key: "scrc",
+    name: "선진임상연구센터",
+    url: "https://scrc.co.kr/kor/sub4/menu_02.html",
+    waitSelector: ".rl-title",
+    findLatestPost: async (page) => {
+      const firstPost = page
+        .locator(".register-list")
+        .filter({ has: page.locator(".rl-state-txt", { hasText: "접수중" }) })
+        .first();
+
+      const title = await firstPost.locator(".rl-title").innerText();
+      const emIdx = await firstPost
+        .locator("a.linkhref")
+        .getAttribute("data-em_idx");
+      const url = `https://scrc.co.kr/kor/sub4/menu_02.html?pmode=view&em_idx=${emIdx}`;
+
+      return { title: title.trim(), url };
+    },
+  },
 ];
 
 function loadLastTitles() {
@@ -52,11 +53,7 @@ function loadLastTitles() {
     return JSON.parse(fs.readFileSync(LAST_STATE_FILE, "utf8"));
   }
 
-  const legacyTitle = fs.existsSync(LEGACY_LAST_FILE)
-    ? fs.readFileSync(LEGACY_LAST_FILE, "utf8").trim()
-    : "";
-
-  return legacyTitle ? { scrc: legacyTitle } : {};
+  return {};
 }
 
 function saveLastTitles(lastTitles) {
@@ -77,19 +74,22 @@ async function notify(site, post) {
 }
 
 (async () => {
-  const browser = await chromium.launch({
+  const context = await chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
+    channel: "chrome",
     headless: true,
+    locale: "ko-KR",
+    timezoneId: "Asia/Seoul",
+    viewport: { width: 1280, height: 800 },
+    extraHTTPHeaders: {
+      "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    },
   });
 
   const lastTitles = loadLastTitles();
 
   try {
     for (const site of sites) {
-      const page = await browser.newPage({
-        userAgent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        viewport: { width: 1280, height: 800 },
-      });
+      const page = await context.newPage();
 
       try {
         await page.goto(site.url, {
@@ -119,6 +119,6 @@ async function notify(site, post) {
       }
     }
   } finally {
-    await browser.close();
+    await context.close();
   }
 })();

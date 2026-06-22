@@ -1,6 +1,7 @@
 # Dependency directories
 node_modules/
 jspm_packages/
+.playwright-chrome-profile/
 
 # Logs
 logs
@@ -39,4 +40,3 @@ build/
 coverage/
 
 # State
-last.txt
